@@ -55,7 +55,12 @@
         }                                           \
     } while (0)
 
-void sendByte(uint8_t byte) {
+// The NOP loops below are timed by instruction count, and on the STM32F1 a
+// loop's speed also depends on where it sits in the 16-byte flash fetch line.
+// Unaligned, code elsewhere in the firmware growing could move it to an offset
+// where the pulses came out of spec (DOIO KB16: random colours, worst at low
+// brightness). Aligned, it always runs the same.
+__attribute__((aligned(16))) void sendByte(uint8_t byte) {
     // WS2812 protocol wants most significant bits first
     for (unsigned char bit = 0; bit < 8; bit++) {
         bool is_one = byte & (1 << (7 - bit));
