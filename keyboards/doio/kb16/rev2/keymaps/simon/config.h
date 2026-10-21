@@ -9,3 +9,7 @@
 
 #define OPENRGB_DEVICE_NAME "DOIO KB16"
 #define OPENRGB_DEVICE_VENDOR "DOIO"
+
+// LEDs off while USB is suspended (the PC asleep), like the Q5 HE: openrgb-
+// daemon leaves the keyboards out of its sleep blackout
+#define RGB_MATRIX_SLEEP
