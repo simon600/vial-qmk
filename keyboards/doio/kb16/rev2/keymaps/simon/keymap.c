@@ -204,6 +204,19 @@ bool host_gaming_set_user(uint8_t state) {
     }
     return true;
 }
+
+// The layer showing (LIGHTING while the layer key is held), for the host's
+// keyboard widget, which may also pick one: like the layer key, by hand
+uint8_t host_layer_user(void) {
+    return get_highest_layer(layer_state);
+}
+
+bool host_layer_set_user(uint8_t layer) {
+    if (layer > LIGHTING) return false;
+    gaming_auto = false;
+    move_to(layer);
+    return true;
+}
 #endif
 
 // --- OLED: the layer in large letters, and what the knobs turn ---
