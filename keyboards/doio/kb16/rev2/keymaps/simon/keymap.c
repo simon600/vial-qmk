@@ -68,10 +68,9 @@ enum kb_keycodes {
     KB_IND_BR_U = QK_KB_0 + (IND_BR_U - SAFE_RANGE),
     KB_IND_BR_D = QK_KB_0 + (IND_BR_D - SAFE_RANGE),
     KB_IND_MODE = QK_KB_0 + (IND_MODE - SAFE_RANGE),
-    // The keyboard's own: bootloader once held for BOOT_HOLD_MS
+    // The keyboard's own: bootloader once held for BOOT_HOLD_MS (boot_hold())
     KB_BOOT = QK_KB_0 + (SAFE_RANGE_SHARED - SAFE_RANGE),
 };
-#define BOOT_HOLD_MS 1000
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -293,9 +292,6 @@ bool oled_task_user(void) {
 
 // --- QMK CALLBACK WRAPPERS ---
 
-static uint16_t boot_timer;
-static bool     boot_held = false;
-
 void keyboard_post_init_user(void) {
     keyboard_post_init_shared();
     // No layer change has happened yet to switch the highlight on
@@ -304,9 +300,6 @@ void keyboard_post_init_user(void) {
 
 void matrix_scan_user(void) {
     matrix_scan_shared();
-    if (boot_held && timer_elapsed(boot_timer) >= BOOT_HOLD_MS) {
-        reset_keyboard();
-    }
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -319,8 +312,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // Held: LT shows LIGHTING
             return true;
         case KB_BOOT:
-            boot_held  = record->event.pressed;
-            boot_timer = timer_read();
+            boot_hold(record->event.pressed);
             return false;
     }
     // Vial's custom keycodes -> the userspace's
