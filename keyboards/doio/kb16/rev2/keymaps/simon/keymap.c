@@ -23,9 +23,9 @@
 
 // Base layers: the layer key (top left) steps through all four, and kbd-daemon
 // switches to GAMING while a game has focus ("gaming mode", host protocol).
-// LIGHTING also shows while the layer key is held, so it sits on top. Every
-// layer lights its keys that do something specific (the fn-layer highlight);
-// the F-keys and Enter dim with the empty ones.
+// Holding the layer key lights the layer's keys that do something specific
+// (the fn-layer highlight; the F-keys and Enter dim with the empty ones) and
+// tells the host, whose overlay shows what they do.
 enum layers {
     DESKTOP,
     GAMING,
@@ -33,8 +33,13 @@ enum layers {
     LIGHTING,
 };
 
-// Tap: next layer; hold: LIGHTING
+// Tap: next layer; hold: highlight this layer's keys. An LT for its tap / hold
+// decision only (the layer is never switched on), kept as it was so the
+// keymap Vial saved still has it
 #define K_LAYER LT(LIGHTING, KC_NO)
+// Held 1 s with the layer key held: the bootloader (bottom right)
+#define BOOT_ROW 3
+#define BOOT_COL 3
 
 // Each layer's F-keys carry their own modifiers, so Hyprland's binds never eat
 // a game's: SUPER + F13–F23 desktop (Hyprland), plain F13–F24 gaming (the
@@ -164,9 +169,12 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 
 // --- BASE LAYERS ---
 
-// The layer stepped to (LIGHTING included); holding the layer key shows
-// LIGHTING on top of it
+// The layer stepped to
 static uint8_t base = DESKTOP;
+// The layer key is held (past a tap): its keys light up
+static bool layer_key_held = false;
+// The bottom right key went down while the layer key was held: the bootloader
+static bool boot_combo = false;
 // GAMING because kbd-daemon asked (a game has focus), and the layer before it
 static bool gaming_auto = false;
 #ifdef HOST_PROTOCOL_ENABLE
@@ -208,10 +216,15 @@ bool host_gaming_set_user(uint8_t state) {
     return true;
 }
 
-// The layer showing (LIGHTING while the layer key is held), for the host's
-// keyboard widget, which may also pick one: like the layer key, by hand
+// The layer showing, for the host's keyboard widget, which may also pick
+// one: like the layer key, by hand
 uint8_t host_layer_user(void) {
     return get_highest_layer(layer_state);
+}
+
+// While the layer key is held: the host's overlay shows that layer's keys
+uint8_t host_held_layer_user(void) {
+    return layer_key_held ? base : HOST_STATE_UNSUPPORTED;
 }
 
 bool host_layer_set_user(uint8_t layer) {
@@ -298,8 +311,6 @@ bool oled_task_user(void) {
 
 void keyboard_post_init_user(void) {
     keyboard_post_init_shared();
-    // No layer change has happened yet to switch the highlight on
-    set_highlight_layer(DESKTOP, true);
 }
 
 void matrix_scan_user(void) {
@@ -313,11 +324,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 if (record->event.pressed) next_base_layer();
                 return false;
             }
-            // Held: LT shows LIGHTING
-            return true;
+            // Held: this layer's keys light up, no layer switch
+            layer_key_held = record->event.pressed;
+            set_highlight_layer(get_highest_layer(layer_state), layer_key_held);
+            return false;
         case KB_BOOT:
             boot_hold(record->event.pressed);
             return false;
+    }
+    // Layer key + bottom right, held 1 s: the bootloader on every layer. Its
+    // release goes the same way, whenever the layer key is let go
+    if (record->event.key.row == BOOT_ROW && record->event.key.col == BOOT_COL) {
+        if (record->event.pressed) boot_combo = layer_key_held;
+        if (boot_combo) {
+            boot_hold(record->event.pressed);
+            if (!record->event.pressed) boot_combo = false;
+            return false;
+        }
     }
     // Vial's custom keycodes -> the userspace's
     if (keycode >= QK_KB_0 && keycode < QK_KB_0 + (SAFE_RANGE_SHARED - SAFE_RANGE)) {
@@ -327,14 +350,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    // Stepped to LIGHTING: letting go of the layer key keeps it
-    if (base == LIGHTING) state |= (layer_state_t)1 << LIGHTING;
-    // Every layer shows its keys
-    set_highlight_layer(get_highest_layer(state), true);
+    // The host may switch the layer while the layer key is held
+    set_highlight_layer(get_highest_layer(state), layer_key_held);
     return layer_state_set_shared(state);
 }
 
-// Lit on every layer: what does something specific. The F-keys you program
+// Lit while the layer key is held: what does something specific. The F-keys you program
 // (plain on GAMING, SUPER + on DESKTOP) and Enter dim with the empty keys;
 // Home Assistant's Hyper + F-keys light.
 bool fn_layer_key_lit_user(uint16_t keycode) {
