@@ -13,3 +13,12 @@
 // LEDs off while USB is suspended (the PC asleep), like the Q5 HE: openrgb-
 // daemon leaves the keyboards out of its sleep blackout
 #define RGB_MATRIX_SLEEP
+
+// The lighting's default, the Q5 HE's: solid white at full brightness. Only
+// read on an EEPROM reset; the Default key (A pressed on LIGHTING) sets it too.
+// DOIO's info.json sets cycle_up_down.
+#undef RGB_MATRIX_DEFAULT_MODE
+#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_COLOR
+#define RGB_MATRIX_DEFAULT_HUE 0
+#define RGB_MATRIX_DEFAULT_SAT 0
+#define RGB_MATRIX_DEFAULT_VAL RGB_MATRIX_MAXIMUM_BRIGHTNESS

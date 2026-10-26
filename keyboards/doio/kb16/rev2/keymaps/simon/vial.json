@@ -10,8 +10,8 @@
     "customKeycodes": [
         {
             "name": "UG_ANIM1",
-            "title": "Keychron boards only",
-            "shortName": "Anim 1"
+            "title": "Lighting default: solid white",
+            "shortName": "Light\ndefault"
         },
         {
             "name": "UG_ANIM2",

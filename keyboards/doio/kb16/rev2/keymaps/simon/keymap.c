@@ -65,6 +65,8 @@ enum layers {
 // userspace's start at SAFE_RANGE (QK_USER_0). The first ones stand for these,
 // in the userspace's order, and are translated before it sees them.
 enum kb_keycodes {
+    // The lighting's default: solid white (the userspace's UG_ANIM1)
+    KB_LIGHT_DEF = QK_KB_0 + (UG_ANIM1 - SAFE_RANGE),
     KB_IND_BR_U = QK_KB_0 + (IND_BR_U - SAFE_RANGE),
     KB_IND_BR_D = QK_KB_0 + (IND_BR_D - SAFE_RANGE),
     KB_IND_MODE = QK_KB_0 + (IND_MODE - SAFE_RANGE),
@@ -130,9 +132,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /*
        ┌───┬───┬───┬───┐   ┌───┐ ┌───┐
-       │Lyr│Pr-│Pr+│Tog│   │ A │ │ B │      A profile -/+ · on/off
-       ├───┼───┼───┼───┤   └───┘ └───┘      C brightness · indicator mode
-       │Hu-│Hu+│Sa-│Sa+│
+       │Lyr│Pr-│Pr+│Tog│   │ A │ │ B │      A profile -/+ · default
+       ├───┼───┼───┼───┤   └───┘ └───┘      B indicator brightness
+       │Hu-│Hu+│Sa-│Sa+│                    C brightness · on/off
        ├───┼───┼───┼───┤                    Driven by openrgb-daemon while it
        │Sp-│Sp+│In-│In+│      ┌───┐         listens, the keyboard's own
        ├───┼───┼───┼───┤      │ C │         lighting otherwise. In± indicator
@@ -140,9 +142,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
        └───┴───┴───┴───┘
 */
     [LIGHTING] = LAYOUT(
-        K_LAYER,     UG_PREV, UG_NEXT,     UG_TOGG,     UG_TOGG,
+        K_LAYER,     UG_PREV, UG_NEXT,     UG_TOGG,     KB_LIGHT_DEF,
         UG_HUED,     UG_HUEU, UG_SATD,     UG_SATU,     KC_NO,
-        UG_SPDD,     UG_SPDU, KB_IND_BR_D, KB_IND_BR_U, KB_IND_MODE,
+        UG_SPDD,     UG_SPDU, KB_IND_BR_D, KB_IND_BR_U, UG_TOGG,
         KB_IND_MODE, _______, _______,     KB_BOOT
     ),
 };
@@ -153,7 +155,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [DESKTOP]  = { ENCODER_CCW_CW(G(MS_WHLU), G(MS_WHLD)), ENCODER_CCW_CW(KC_MRWD, KC_MFFD),   ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [GAMING]   = { ENCODER_CCW_CW(DPI_DN, DPI_UP),        ENCODER_CCW_CW(MIC_DN, MIC_UP),     ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [HOME]     = { ENCODER_CCW_CW(HA_DSK_D, HA_DSK_U),    ENCODER_CCW_CW(HA_FLR_D, HA_FLR_U), ENCODER_CCW_CW(HA_ALL_D, HA_ALL_U) },
-    [LIGHTING] = { ENCODER_CCW_CW(UG_PREV, UG_NEXT),      ENCODER_CCW_CW(KC_NO, KC_NO),       ENCODER_CCW_CW(UG_VALD, UG_VALU) },
+    [LIGHTING] = { ENCODER_CCW_CW(UG_PREV, UG_NEXT),      ENCODER_CCW_CW(KB_IND_BR_D, KB_IND_BR_U), ENCODER_CCW_CW(UG_VALD, UG_VALU) },
 };
 #endif
 // clang-format on
@@ -267,7 +269,7 @@ static const layer_legend_t legends[] = {
     [DESKTOP]  = {"DESKTOP", "A wksp B seek C vol"},
     [GAMING]   = {"GAMING", "A dpi  B mic  C vol"},
     [HOME]     = {"HOME", "A desk B flr  C all"},
-    [LIGHTING] = {"LIGHTING", "A prof   C bright"},
+    [LIGHTING] = {"LIGHTING", "A prof B ind C brt"},
 };
 
 bool oled_task_user(void) {
