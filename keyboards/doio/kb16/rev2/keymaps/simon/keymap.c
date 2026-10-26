@@ -57,9 +57,11 @@ enum layers {
 #define HA_ALL_D HYPR(KC_VOLD)
 #define HA_ALL_U HYPR(KC_VOLU)
 #define HA_ALL HYPR(KC_MUTE)
-// Hyprland's ALT + volume binds: the mouse's DPI
+// Hyprland's ALT + volume binds: the mouse's DPI, ALT + mute stores it in
+// the onboard profile
 #define DPI_DN A(KC_VOLD)
 #define DPI_UP A(KC_VOLU)
+#define DPI_SAV A(KC_MUTE)
 
 // Vial names custom keycodes from QK_KB_0 (vial.json customKeycodes); the
 // userspace's start at SAFE_RANGE (QK_USER_0). The first ones stand for these,
@@ -96,7 +98,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /*
        ┌───┬───┬───┬───┐   ┌───┐ ┌───┐
-       │Lyr│F13│F14│F15│   │ A │ │ B │      A mouse DPI
+       │Lyr│F13│F14│F15│   │ A │ │ B │      A mouse DPI · save to profile
        ├───┼───┼───┼───┤   └───┘ └───┘      B mic volume · mic mute
        │F16│F17│F18│F19│                    C volume · mute
        ├───┼───┼───┼───┤
@@ -106,7 +108,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
        └───┴───┴───┴───┘
 */
     [GAMING] = LAYOUT(
-        K_LAYER, KC_F13, KC_F14,  KC_F15, KC_NO,
+        K_LAYER, KC_F13, KC_F14,  KC_F15, DPI_SAV,
         KC_F16,  KC_F17, KC_F18,  KC_F19, MIC_MUT,
         KC_F20,  KC_F21, KC_F22,  KC_F23, KC_MUTE,
         KC_F24,  KC_ESC, SGUI(KC_S), KC_ENT
